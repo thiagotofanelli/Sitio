@@ -150,6 +150,18 @@ export function Header() {
                     </Link>
                   </motion.div>
                 ))}
+
+                {/* Atalho Admin no Menu Mobile */}
+                <div className="pt-3 mt-3 border-t border-white/10">
+                  <Link
+                    href="/admin"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center gap-2.5 px-4 py-2.5 rounded-xl text-white/50 hover:text-white hover:bg-white/10 text-sm font-medium transition-all"
+                  >
+                    <span className="w-2 h-2 rounded-full bg-emerald-400" />
+                    Acessar Área Administrativa
+                  </Link>
+                </div>
               </nav>
 
               {/* CTA */}

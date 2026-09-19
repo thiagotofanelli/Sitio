@@ -99,18 +99,18 @@ export function Footer() {
         </div>
       </div>
 
-      {/* Divider */}
+      {/* Divider & Bottom Bar */}
       <div className="border-t border-white/8">
-        <div className="max-w-7xl mx-auto px-5 md:px-8 py-5 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-white/25 text-xs">
+        <div className="max-w-7xl mx-auto px-5 md:px-8 pt-6 pb-32 sm:py-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <p className="text-white/35 text-xs text-center sm:text-left">
             © {year} Sítio Recanto dos Pássaros. Todos os direitos reservados.
           </p>
           <Link
             href="/admin"
-            className="flex items-center gap-2 text-white/25 hover:text-white/60 text-xs transition-colors"
+            className="inline-flex items-center gap-2.5 px-5 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-white text-xs font-semibold transition-all shadow-md active:scale-95"
           >
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-            Área Administrativa
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            Acessar Área Administrativa
           </Link>
         </div>
       </div>

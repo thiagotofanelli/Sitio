@@ -197,6 +197,35 @@ const DEFAULT_SITE_IMAGES = [
     description: 'Mata nativa e trilhas preservadas para caminhadas ecológicas.',
     order: 13,
   },
+
+  // Cards de Estrutura & Acomodações
+  {
+    id: 'acc-1',
+    section: 'ACCOMMODATION',
+    category: 'Casa Sede & Suítes',
+    url: '/images/sitio-real/foto-sala-estar.png',
+    label: 'Casa Sede Colonial (Card Principal)',
+    description: 'Foto de capa exibida no card Casa Sede Colonial na seção de acomodações.',
+    order: 1,
+  },
+  {
+    id: 'acc-2',
+    section: 'ACCOMMODATION',
+    category: 'Alojamentos',
+    url: 'https://images.unsplash.com/photo-1555854877-bab0e564b8d5?auto=format&fit=crop&w=800&q=80',
+    label: 'Alojamentos Externos (Card Principal)',
+    description: 'Foto de capa exibida no card Alojamentos Externos na seção de acomodações.',
+    order: 2,
+  },
+  {
+    id: 'acc-3',
+    section: 'ACCOMMODATION',
+    category: 'Salão de Festas',
+    url: '/images/sitio-real/foto-churrasqueira-gourmet.png',
+    label: 'Infraestrutura de Apoio (Card Principal)',
+    description: 'Foto de capa exibida no card Infraestrutura de Apoio na seção de acomodações.',
+    order: 3,
+  },
 ];
 
 export async function GET(request: Request) {

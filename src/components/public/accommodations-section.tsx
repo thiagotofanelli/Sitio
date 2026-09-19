@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { BedDouble, Bath, ShowerHead, Users, Home, Building2, Utensils, Check } from 'lucide-react';
 
@@ -53,6 +54,28 @@ const cards = [
 ];
 
 export function AccommodationsSection() {
+  const [dynamicImages, setDynamicImages] = useState<Record<number, string>>({});
+
+  useEffect(() => {
+    fetch('/api/images?section=ACCOMMODATION')
+      .then((r) => r.json())
+      .then((data: any[]) => {
+        if (Array.isArray(data) && data.length > 0) {
+          const map: Record<number, string> = {};
+          data.forEach((img) => {
+            if (img.order === 1 || img.label?.includes('Sede')) {
+              map[0] = img.url;
+            } else if (img.order === 2 || img.label?.includes('Alojamento')) {
+              map[1] = img.url;
+            } else if (img.order === 3 || img.label?.includes('Infraestrutura') || img.label?.includes('Apoio')) {
+              map[2] = img.url;
+            }
+          });
+          setDynamicImages(map);
+        }
+      })
+      .catch(() => {});
+  }, []);
   return (
     <section id="estrutura" className="py-24 bg-[#F5F0E8]">
       <div className="max-w-7xl mx-auto px-5 md:px-8">
@@ -110,7 +133,7 @@ export function AccommodationsSection() {
                 <div className="relative h-52 overflow-hidden bg-[#DDD5C4]">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src={card.image}
+                    src={dynamicImages[idx] || card.image}
                     alt={card.title}
                     loading="lazy"
                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"

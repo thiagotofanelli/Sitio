@@ -245,6 +245,7 @@ export function ImagesManager() {
   const filteredImages = images.filter((img) => {
     if (selectedFilter === 'ALL') return true;
     if (selectedFilter === 'HERO') return img.section === 'HERO';
+    if (selectedFilter === 'ACCOMMODATION') return img.section === 'ACCOMMODATION';
     return img.category === selectedFilter;
   });
 
@@ -296,6 +297,17 @@ export function ImagesManager() {
           )}
         >
           🌟 Banner / Hero ({images.filter(i => i.section === 'HERO').length})
+        </button>
+        <button
+          onClick={() => setSelectedFilter('ACCOMMODATION')}
+          className={cn(
+            'px-4 py-2 rounded-xl text-sm font-semibold transition-all cursor-pointer',
+            selectedFilter === 'ACCOMMODATION'
+              ? 'bg-[#1B4332] text-white shadow-sm'
+              : 'bg-white border border-[#E9ECEF] text-gray-600 hover:bg-gray-50'
+          )}
+        >
+          🏡 Cards Acomodações ({images.filter(i => i.section === 'ACCOMMODATION').length})
         </button>
         {CATEGORIES.map((cat) => (
           <button
