@@ -19,49 +19,49 @@ async function main() {
   }
 
   // 2. Pricing Tiers
-  await prisma.pricingTier.deleteMany()
-  console.log('Existing pricing tiers deleted')
+  const pricingCount = await prisma.pricingTier.count()
+  if (pricingCount === 0) {
+    const weekendTiers = [
+      { peopleCount: 20, price: 3000 },
+      { peopleCount: 25, price: 3400 },
+      { peopleCount: 30, price: 3600 },
+      { peopleCount: 35, price: 3800 },
+      { peopleCount: 40, price: 4000 },
+      { peopleCount: 50, price: 4600 },
+      { peopleCount: 60, price: 5200 },
+      { peopleCount: 70, price: 5800 },
+      { peopleCount: 80, price: 6400 },
+      { peopleCount: 90, price: 7200 },
+      { peopleCount: 100, price: 7600 },
+    ]
 
-  const weekendTiers = [
-    { peopleCount: 20, price: 3000 },
-    { peopleCount: 25, price: 3400 },
-    { peopleCount: 30, price: 3600 },
-    { peopleCount: 35, price: 3800 },
-    { peopleCount: 40, price: 4000 },
-    { peopleCount: 50, price: 4600 },
-    { peopleCount: 60, price: 5200 },
-    { peopleCount: 70, price: 5800 },
-    { peopleCount: 80, price: 6400 },
-    { peopleCount: 90, price: 7200 },
-    { peopleCount: 100, price: 7600 },
-  ]
+    const dayUseTiers = [
+      { peopleCount: 100, price: 5600 },
+      { peopleCount: 150, price: 7500 },
+      { peopleCount: 200, price: 8500 },
+    ]
 
-  const dayUseTiers = [
-    { peopleCount: 100, price: 5600 },
-    { peopleCount: 150, price: 7500 },
-    { peopleCount: 200, price: 8500 },
-  ]
+    for (const tier of weekendTiers) {
+      await prisma.pricingTier.create({
+        data: {
+          category: 'WEEKEND',
+          peopleCount: tier.peopleCount,
+          price: tier.price,
+        },
+      })
+    }
 
-  for (const tier of weekendTiers) {
-    await prisma.pricingTier.create({
-      data: {
-        category: 'WEEKEND',
-        peopleCount: tier.peopleCount,
-        price: tier.price,
-      },
-    })
+    for (const tier of dayUseTiers) {
+      await prisma.pricingTier.create({
+        data: {
+          category: 'DAY_USE',
+          peopleCount: tier.peopleCount,
+          price: tier.price,
+        },
+      })
+    }
+    console.log('Pricing tiers created')
   }
-
-  for (const tier of dayUseTiers) {
-    await prisma.pricingTier.create({
-      data: {
-        category: 'DAY_USE',
-        peopleCount: tier.peopleCount,
-        price: tier.price,
-      },
-    })
-  }
-  console.log('Pricing tiers created')
 
   // 3. Admin User
   const passwordHash = await bcrypt.hash('suliper22', 10)
@@ -298,6 +298,32 @@ async function main() {
         label: 'Playground Infantil',
         description: 'Espaço de recreação infantil ao ar livre.',
         order: 19,
+      },
+
+      // Cards de Estrutura & Acomodações
+      {
+        section: 'ACCOMMODATION',
+        category: 'Casa Sede & Suítes',
+        url: '/images/sitio-real/foto-sala-estar.png',
+        label: 'Casa Sede Colonial (Card Principal)',
+        description: 'Foto de capa exibida no card Casa Sede Colonial na seção de acomodações.',
+        order: 1,
+      },
+      {
+        section: 'ACCOMMODATION',
+        category: 'Alojamentos',
+        url: 'https://images.unsplash.com/photo-1555854877-bab0e564b8d5?auto=format&fit=crop&w=800&q=80',
+        label: 'Alojamentos Externos (Card Principal)',
+        description: 'Foto de capa exibida no card Alojamentos Externos na seção de acomodações.',
+        order: 2,
+      },
+      {
+        section: 'ACCOMMODATION',
+        category: 'Salão de Festas',
+        url: '/images/sitio-real/foto-churrasqueira-gourmet.png',
+        label: 'Infraestrutura de Apoio (Card Principal)',
+        description: 'Foto de capa exibida no card Infraestrutura de Apoio na seção de acomodações.',
+        order: 3,
       },
     ]
 
