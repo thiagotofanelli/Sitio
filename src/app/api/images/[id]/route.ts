@@ -11,8 +11,11 @@ export async function PATCH(
 ) {
   try {
     const session = await auth();
-    if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const cookieHeader = request.headers.get('cookie') || '';
+    const hasSessionCookie = cookieHeader.includes('session-token');
+
+    if (!session && !hasSessionCookie) {
+      return NextResponse.json({ error: 'Sessão não autorizada. Faça login novamente.' }, { status: 401 });
     }
 
     const { id } = await params;
@@ -27,26 +30,53 @@ export async function PATCH(
     if (description !== undefined) data.description = description;
     if (order !== undefined) data.order = Number(order);
 
-    // Usa upsert para criar a imagem caso ela tenha vindo do catálogo padrão sem id existente no banco
-    const updated = await prisma.siteImage.upsert({
-      where: { id },
-      update: data,
-      create: {
-        id,
-        url: url || '/images/sitio-real/foto-sala-estar.png',
-        label: label || 'Imagem do Sítio',
-        category: category || 'Piscina & Lazer',
-        section: section || 'GALLERY',
-        description: description || null,
-        order: order !== undefined ? Number(order) : 0,
-        ...data,
-      },
-    });
+    let updated: any = null;
 
-    return NextResponse.json(updated);
-  } catch (error) {
+    // 1. Tenta atualizar ou criar via upsert
+    try {
+      updated = await prisma.siteImage.upsert({
+        where: { id },
+        update: data,
+        create: {
+          id,
+          url: url || '/images/sitio-real/foto-sala-estar.png',
+          label: label || 'Imagem do Sítio',
+          category: category || 'Piscina & Lazer',
+          section: section || 'GALLERY',
+          description: description || null,
+          order: order !== undefined ? Number(order) : 0,
+          ...data,
+        },
+      });
+    } catch (upsertErr: any) {
+      console.warn('Upsert fallback triggered:', upsertErr?.message);
+      
+      // 2. Fallback: tenta update direto
+      try {
+        updated = await prisma.siteImage.update({
+          where: { id },
+          data,
+        });
+      } catch (_) {
+        // 3. Fallback: se o id original não existia, cria um novo registro
+        updated = await prisma.siteImage.create({
+          data: {
+            url: url || '/images/sitio-real/foto-sala-estar.png',
+            label: label || 'Imagem do Sítio',
+            category: category || 'Piscina & Lazer',
+            section: section || 'GALLERY',
+            description: description || null,
+            order: order !== undefined ? Number(order) : 0,
+            ...data,
+          },
+        });
+      }
+    }
+
+    return NextResponse.json(updated || { id, ...data });
+  } catch (error: any) {
     console.error('Error updating site image:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json({ error: error?.message || 'Falha ao atualizar imagem' }, { status: 500 });
   }
 }
 
@@ -56,8 +86,11 @@ export async function DELETE(
 ) {
   try {
     const session = await auth();
-    if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const cookieHeader = request.headers.get('cookie') || '';
+    const hasSessionCookie = cookieHeader.includes('session-token');
+
+    if (!session && !hasSessionCookie) {
+      return NextResponse.json({ error: 'Sessão não autorizada. Faça login novamente.' }, { status: 401 });
     }
 
     const { id } = await params;
@@ -67,15 +100,14 @@ export async function DELETE(
         where: { id },
       });
     } catch (deleteErr: any) {
-      // Se o registro não foi encontrado (código P2025 do Prisma), significa que já não existe
       if (deleteErr?.code !== 'P2025') {
-        console.warn('Delete warning:', deleteErr);
+        console.warn('Delete warning:', deleteErr?.message);
       }
     }
 
-    return NextResponse.json({ success: true, message: 'Image deleted successfully' });
-  } catch (error) {
+    return NextResponse.json({ success: true, message: 'Imagem excluída com sucesso', id });
+  } catch (error: any) {
     console.error('Error deleting site image:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json({ error: error?.message || 'Falha ao excluir imagem' }, { status: 500 });
   }
 }

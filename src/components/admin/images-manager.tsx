@@ -166,7 +166,29 @@ export function ImagesManager() {
             section: formSection,
           }),
         });
-        if (!res.ok) throw new Error('Falha ao atualizar imagem');
+
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.error || 'Falha ao atualizar imagem');
+        }
+
+        const savedData = await res.json().catch(() => null);
+
+        // Atualização otimista imediata na tela
+        setImages((prev) =>
+          prev.map((img) =>
+            img.id === editingImage.id
+              ? {
+                  ...img,
+                  url: formUrl,
+                  label: formLabel,
+                  description: formDescription,
+                  category: formCategory,
+                  section: formSection,
+                }
+              : img
+          )
+        );
       } else {
         // Create
         const res = await fetch('/api/images', {
@@ -181,11 +203,20 @@ export function ImagesManager() {
             order: images.length + 1,
           }),
         });
-        if (!res.ok) throw new Error('Falha ao criar imagem');
+
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.error || 'Falha ao criar imagem');
+        }
+
+        const newImg = await res.json().catch(() => null);
+        if (newImg) {
+          setImages((prev) => [...prev, newImg]);
+        }
       }
 
       setModalOpen(false);
-      await fetchImages();
+      fetchImages();
     } catch (err: any) {
       setActionError(err.message || 'Erro ao salvar alterações');
     } finally {
