@@ -246,14 +246,15 @@ export async function GET(request: Request) {
         orderBy: { order: 'asc' },
       });
 
-      // Se o banco de dados estiver vazio, faz o auto-seed das imagens padrão
-      if (images.length === 0) {
+      // 1. Se o banco de dados estiver completamente vazio, faz o auto-seed inicial
+      if (images.length === 0 && !section && !category) {
         const totalInDb = await prisma.siteImage.count();
         if (totalInDb === 0) {
           await Promise.all(
             DEFAULT_SITE_IMAGES.map((img) =>
               prisma.siteImage.create({
                 data: {
+                  id: img.id,
                   url: img.url,
                   label: img.label,
                   category: img.category,
@@ -275,7 +276,48 @@ export async function GET(request: Request) {
       console.error('Database query failed in /api/images, using fallback:', dbErr);
     }
 
-    // Fallback garantido caso o banco ainda esteja vazio ou falhe no serverless
+    // 2. Garantir que os 3 cards de ACCOMMODATION sempre existam e apareçam,
+    // mesmo se o banco já possuir fotos antigas de HERO/GALLERY
+    const shouldCheckAccommodations = !section || section === 'ACCOMMODATION';
+    if (shouldCheckAccommodations) {
+      const accommodationDefaults = DEFAULT_SITE_IMAGES.filter((i) => {
+        if (i.section !== 'ACCOMMODATION') return false;
+        if (category && category !== 'Todos' && i.category !== category) return false;
+        return true;
+      });
+
+      for (const accDef of accommodationDefaults) {
+        const alreadyInList = images.some(
+          (img) =>
+            img.id === accDef.id ||
+            (img.section === 'ACCOMMODATION' && (img.order === accDef.order || img.label === accDef.label))
+        );
+
+        if (!alreadyInList) {
+          try {
+            const created = await prisma.siteImage.upsert({
+              where: { id: accDef.id },
+              update: {},
+              create: {
+                id: accDef.id,
+                url: accDef.url,
+                label: accDef.label,
+                category: accDef.category,
+                section: accDef.section,
+                description: accDef.description,
+                order: accDef.order,
+              },
+            });
+            images.push(created);
+          } catch (e) {
+            // Em caso de erro de persistência (ou SQLite em modo read-only na Vercel), inclui em memória
+            images.push(accDef);
+          }
+        }
+      }
+    }
+
+    // 3. Fallback garantido caso o banco ainda esteja vazio ou falhe no serverless
     if (!images || images.length === 0) {
       images = DEFAULT_SITE_IMAGES.filter((img) => {
         if (section && img.section !== section) return false;

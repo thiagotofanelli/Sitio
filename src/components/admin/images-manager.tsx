@@ -359,6 +359,11 @@ export function ImagesManager() {
                         Banner Hero
                       </span>
                     )}
+                    {img.section === 'ACCOMMODATION' && (
+                      <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-[#1B4332] text-white shadow-sm">
+                        Card Acomodação
+                      </span>
+                    )}
                   </div>
                 </div>
 
@@ -378,15 +383,17 @@ export function ImagesManager() {
                   className="flex-1 cursor-pointer hover:bg-gray-100"
                 >
                   <Edit className="w-3.5 h-3.5 mr-1" />
-                  Alterar
+                  Alterar Foto
                 </Button>
-                <button
-                  onClick={() => handleDelete(img.id, img.label)}
-                  className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
-                  title="Excluir imagem"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
+                {img.section !== 'ACCOMMODATION' && (
+                  <button
+                    onClick={() => handleDelete(img.id, img.label)}
+                    className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
+                    title="Excluir imagem"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                )}
               </div>
             </Card>
           ))}
