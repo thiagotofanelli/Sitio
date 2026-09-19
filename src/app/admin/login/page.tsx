@@ -20,17 +20,29 @@ export default function AdminLoginPage() {
     setLoading(true);
     setError('');
 
-    const res = await signIn('credentials', {
-      email,
-      password,
-      redirect: false,
-    });
+    try {
+      const res = await signIn('credentials', {
+        email: email.trim().toLowerCase(),
+        password,
+        redirect: false,
+        redirectTo: '/admin',
+      });
 
-    if (res?.error) {
-      setError('Credenciais inválidas');
-      setLoading(false);
-    } else {
-      router.push('/admin');
+      if (res?.error) {
+        setError('E-mail ou senha incorretos.');
+        setLoading(false);
+      } else {
+        window.location.href = '/admin';
+      }
+    } catch (err: any) {
+      console.error('Login error:', err);
+      // NextAuth às vezes lança exceção em caso de redirecionamento ou credenciais
+      if (err?.message?.includes('CredentialsSignin')) {
+        setError('E-mail ou senha incorretos.');
+        setLoading(false);
+      } else {
+        window.location.href = '/admin';
+      }
     }
   };
 
