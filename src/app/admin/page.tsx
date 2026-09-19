@@ -15,44 +15,53 @@ export default async function AdminDashboardPage() {
   const now = new Date();
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
-  // Parallel data fetching
-  const [
-    totalLeads,
-    leadsThisMonth,
-    bookedLeads,
-    nextBlock,
-    recentLeads
-  ] = await Promise.all([
-    prisma.bookingInquiry.count(),
-    prisma.bookingInquiry.count({
-      where: {
-        createdAt: {
-          gte: startOfMonth
+  let totalLeads = 0;
+  let leadsThisMonth = 0;
+  let bookedLeads = 0;
+  let nextBlock: any = null;
+  let recentLeads: any[] = [];
+
+  try {
+    const results = await Promise.all([
+      prisma.bookingInquiry.count(),
+      prisma.bookingInquiry.count({
+        where: {
+          createdAt: {
+            gte: startOfMonth
+          }
         }
-      }
-    }),
-    prisma.bookingInquiry.count({
-      where: {
-        status: 'BOOKED'
-      }
-    }),
-    prisma.blockedDate.findFirst({
-      where: {
-        startDate: {
-          gte: now
+      }),
+      prisma.bookingInquiry.count({
+        where: {
+          status: 'BOOKED'
         }
-      },
-      orderBy: {
-        startDate: 'asc'
-      }
-    }),
-    prisma.bookingInquiry.findMany({
-      take: 5,
-      orderBy: {
-        createdAt: 'desc'
-      }
-    })
-  ]);
+      }),
+      prisma.blockedDate.findFirst({
+        where: {
+          startDate: {
+            gte: now
+          }
+        },
+        orderBy: {
+          startDate: 'asc'
+        }
+      }),
+      prisma.bookingInquiry.findMany({
+        take: 5,
+        orderBy: {
+          createdAt: 'desc'
+        }
+      })
+    ]);
+
+    totalLeads = results[0];
+    leadsThisMonth = results[1];
+    bookedLeads = results[2];
+    nextBlock = results[3];
+    recentLeads = results[4];
+  } catch (error) {
+    console.error('Error loading dashboard stats:', error);
+  }
 
   const stats = [
     {

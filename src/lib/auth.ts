@@ -3,8 +3,16 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { prisma } from "./prisma";
 
+// Fallback garantido para NextAuth v5 em ambientes serverless como a Vercel
+if (!process.env.AUTH_SECRET) {
+  process.env.AUTH_SECRET = "sitio-alto-padrao-juquitiba-secret-key-2024";
+}
+if (!process.env.NEXTAUTH_SECRET) {
+  process.env.NEXTAUTH_SECRET = "sitio-alto-padrao-juquitiba-secret-key-2024";
+}
+
 export const { handlers, signIn, signOut, auth } = NextAuth({
-  secret: process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET || "sitio-alto-padrao-juquitiba-secret-key-2024",
+  secret: process.env.AUTH_SECRET,
   trustHost: true,
   providers: [
     CredentialsProvider({
