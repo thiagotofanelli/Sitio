@@ -2,6 +2,9 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { auth } from '@/lib/auth';
 
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
 export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -24,9 +27,20 @@ export async function PATCH(
     if (description !== undefined) data.description = description;
     if (order !== undefined) data.order = Number(order);
 
-    const updated = await prisma.siteImage.update({
+    // Usa upsert para criar a imagem caso ela tenha vindo do catálogo padrão sem id existente no banco
+    const updated = await prisma.siteImage.upsert({
       where: { id },
-      data,
+      update: data,
+      create: {
+        id,
+        url: url || '/images/sitio-real/foto-sala-estar.png',
+        label: label || 'Imagem do Sítio',
+        category: category || 'Piscina & Lazer',
+        section: section || 'GALLERY',
+        description: description || null,
+        order: order !== undefined ? Number(order) : 0,
+        ...data,
+      },
     });
 
     return NextResponse.json(updated);
@@ -48,9 +62,16 @@ export async function DELETE(
 
     const { id } = await params;
 
-    await prisma.siteImage.delete({
-      where: { id },
-    });
+    try {
+      await prisma.siteImage.delete({
+        where: { id },
+      });
+    } catch (deleteErr: any) {
+      // Se o registro não foi encontrado (código P2025 do Prisma), significa que já não existe
+      if (deleteErr?.code !== 'P2025') {
+        console.warn('Delete warning:', deleteErr);
+      }
+    }
 
     return NextResponse.json({ success: true, message: 'Image deleted successfully' });
   } catch (error) {

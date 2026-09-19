@@ -2,6 +2,9 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { auth } from '@/lib/auth';
 
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
 export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -17,12 +20,19 @@ export async function PATCH(
     const { price } = body;
 
     if (typeof price !== 'number' || price < 0) {
-      return NextResponse.json({ error: 'Invalid price' }, { status: 400 });
+      return NextResponse.json({ error: 'Preço inválido' }, { status: 400 });
     }
 
-    const updated = await prisma.pricingTier.update({
+    // Upsert para garantir atualização mesmo que o tier tenha vindo do fallback com id padrão
+    const updated = await prisma.pricingTier.upsert({
       where: { id },
-      data: { price },
+      update: { price },
+      create: {
+        id,
+        category: id.includes('day') ? 'DAY_USE' : 'WEEKEND',
+        peopleCount: 20,
+        price,
+      },
     });
 
     return NextResponse.json(updated);
@@ -47,9 +57,15 @@ export async function DELETE(
 
     const { id } = await params;
 
-    await prisma.pricingTier.delete({
-      where: { id },
-    });
+    try {
+      await prisma.pricingTier.delete({
+        where: { id },
+      });
+    } catch (err: any) {
+      if (err?.code !== 'P2025') {
+        console.warn('Delete pricing tier warning:', err);
+      }
+    }
 
     return NextResponse.json({ success: true, message: 'Tier deleted successfully' });
   } catch (error) {
