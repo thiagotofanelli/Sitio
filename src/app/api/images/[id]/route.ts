@@ -9,6 +9,8 @@ export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  let data: any = {};
+
   try {
     const session = await auth();
     const cookieHeader = request.headers.get('cookie') || '';
@@ -22,7 +24,6 @@ export async function PATCH(
     const body = await request.json();
     const { url, label, category, section, description, order } = body;
 
-    const data: any = {};
     if (url !== undefined) data.url = url;
     if (label !== undefined) data.label = label;
     if (category !== undefined) data.category = category;
