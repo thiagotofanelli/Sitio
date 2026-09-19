@@ -54,7 +54,7 @@ export default function AdminLoginPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 className="w-full"
-                placeholder="admin@sitio.com.br"
+                placeholder="eduardo@sitio.com"
               />
             </div>
             <div className="space-y-2">

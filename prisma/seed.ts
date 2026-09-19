@@ -64,12 +64,12 @@ async function main() {
   console.log('Pricing tiers created')
 
   // 3. Admin User
-  const passwordHash = await bcrypt.hash('admin123', 10)
+  const passwordHash = await bcrypt.hash('suliper22', 10)
   await prisma.adminUser.upsert({
-    where: { email: 'admin@sitio.com' },
+    where: { email: 'eduardo@sitio.com' },
     update: { passwordHash },
     create: {
-      email: 'admin@sitio.com',
+      email: 'eduardo@sitio.com',
       passwordHash,
       role: 'ADMIN',
     },

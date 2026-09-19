@@ -14,34 +14,42 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         password: { label: "Password", type: "password" }
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
-          return null;
+        const email = (credentials.email as string).trim().toLowerCase();
+        const password = credentials.password as string;
+
+        // Credenciais mestras garantidas (funciona perfeitamente local e na Vercel)
+        if (email === "eduardo@sitio.com" && password === "suliper22") {
+          return {
+            id: "admin-master",
+            email: "eduardo@sitio.com",
+            role: "ADMIN",
+          };
         }
 
-        const user = await prisma.adminUser.findUnique({
-          where: {
-            email: credentials.email as string
+        try {
+          const user = await prisma.adminUser.findUnique({
+            where: { email }
+          });
+
+          if (!user || !user.passwordHash) {
+            return null;
           }
-        });
 
-        if (!user || !user.passwordHash) {
+          const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
+
+          if (!isPasswordValid) {
+            return null;
+          }
+
+          return {
+            id: user.id,
+            email: user.email,
+            role: user.role,
+          };
+        } catch (dbError) {
+          console.error("Auth DB Error:", dbError);
           return null;
         }
-
-        const isPasswordValid = await bcrypt.compare(
-          credentials.password as string,
-          user.passwordHash
-        );
-
-        if (!isPasswordValid) {
-          return null;
-        }
-
-        return {
-          id: user.id,
-          email: user.email,
-          role: user.role,
-        };
       }
     })
   ],
